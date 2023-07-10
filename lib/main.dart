@@ -3,16 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:personal_expenses/components/transaction_form.dart';
 import 'package:personal_expenses/components/transaction_list.dart';
 import '../models/transaction.dart';
+import 'components/chart.dart';
 
-main() => runApp(const ExpensesApp());
+main() => runApp(ExpensesApp());
 
 class ExpensesApp extends StatelessWidget {
-  const ExpensesApp({Key? key}) : super(key: key);
+  ExpensesApp({Key? key}) : super(key: key);
+  final ThemeData theme = ThemeData();
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = ThemeData();
-
     return MaterialApp(
       home: const MyHomePage(),
       theme: ThemeData(
@@ -25,6 +25,10 @@ class ExpensesApp extends StatelessWidget {
               titleLarge: const TextStyle(
                 fontFamily: 'OpenSans',
                 fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+              labelLarge: const TextStyle(
+                color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -48,27 +52,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final _transactions = [
-    Transaction(
-      id: 't1',
-      title: 'Novo Tênis de Corrida',
-      value: 310.76,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: 't2',
-      title: 'Conta de Luz',
-      value: 211.30,
-      date: DateTime.now(),
-    ),
-  ];
+  final List<Transaction> _transactions = [];
 
-  _addTransaction(String title, double value) {
+  List<Transaction> get _recentTransactions {
+    return _transactions.where((tr) {
+      return tr.date.isAfter(DateTime.now().subtract(
+        const Duration(days: 7),
+      ));
+    }).toList();
+  }
+
+  _addTransaction(String title, double value, DateTime date) {
     final newTransaction = Transaction(
       id: Random().nextDouble().toString(),
       title: title,
       value: value,
-      date: DateTime.now(),
+      date: date,
     );
 
     setState(() {
@@ -105,13 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(
-              child: Card(
-                color: Colors.blue,
-                elevation: 5,
-                child: Text('Gráfico'),
-              ),
-            ),
+            Chart(_recentTransactions),
             TransactionList(transactions: _transactions),
           ],
         ),
